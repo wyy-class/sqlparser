@@ -1,0 +1,7 @@
+{
+    "marscode.enableCodelens": {
+        "enableInlineDocumentation": false,
+        "enableInlineUnitTest": false,
+        "enableInlineExplain": false
+    }
+}
