@@ -478,3 +478,24 @@ func createReadme(out output) {
 		log.Fatal(err)
 	}
 }
+
+func TestSQLParser(t *testing.T) {
+	sqls := []string{"select a,b from test where id>'1' and name='wyy' or age<'20' and name like '%a%'"}
+	querys, err := ParseMany(sqls)
+	if err != nil {
+		log.Fatalln("parseMany fail:", err)
+		return
+	}
+	fmt.Println(querys[0].ToString())
+}
+
+// 支持distinct
+func TestQuerySelect(t *testing.T) {
+	sql := "select distinct id as ID,name as NAME from test where id >'1'"
+	result, err := Parse(sql)
+	if err != nil {
+		log.Fatalln("QueryCSV fail:", err)
+		return
+	}
+	fmt.Printf("result.ToString(): %v\n", result.ToString())
+}

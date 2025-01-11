@@ -3,5 +3,5 @@ id,name,age,city
 2,Bob,25,Los Angeles
 3,Charlie,35,Chicago
 6,1,2,3
-6,,5,6
+6,1,2,3
 4,,5,6

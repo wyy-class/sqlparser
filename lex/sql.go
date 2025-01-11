@@ -119,6 +119,11 @@ func (p *parser) doParse() (query.Query, error) {
 			if !isIdentifierOrAsterisk(identifier) {
 				return p.query, fmt.Errorf("at SELECT: expected field to SELECT")
 			}
+			if idDistinct(identifier) {
+				p.query.Distinct = true
+				p.pop()
+				identifier = p.peek()
+			}
 			p.query.Fields = append(p.query.Fields, identifier)
 			p.pop()
 			maybeFrom := p.peek()
@@ -383,6 +388,13 @@ func (p *parser) doParse() (query.Query, error) {
 	}
 }
 
+func idDistinct(identifier string) bool {
+	if ideentifier := strings.ToUpper(identifier); ideentifier == "DISTINCT" {
+		return true
+	}
+	return false
+}
+
 func (p *parser) peek() string {
 	peeked, _ := p.peekWithLength()
 	return peeked
@@ -415,7 +427,7 @@ func (p *parser) peekWithLength() (string, int) {
 			return token, len(token)
 		}
 	}
-	if p.sql[p.i] == '\'' { // Quoted string
+	if p.sql[p.i] == '\'' { // 引号字符串
 		return p.peekQuotedStringWithLength()
 	}
 	return p.peekIdentifierWithLength()

@@ -11,6 +11,7 @@ type Query struct {
 	Inserts    [][]string
 	Fields     []string // Used for SELECT (i.e. SELECTed field names) and INSERT (INSERTEDed field names)
 	Aliases    map[string]string
+	Distinct   bool
 }
 
 func (q Query) ToString() string {
@@ -22,6 +23,7 @@ func (q Query) ToString() string {
 	ss = append(ss, fmt.Sprintf("Inserts: %v\n", q.Inserts)...)
 	ss = append(ss, fmt.Sprintf("Fields: %v\n", q.Fields)...)
 	ss = append(ss, fmt.Sprintf("Aliases: %v\n", q.Aliases)...)
+	ss = append(ss, fmt.Sprintf("Distinct: %v\n", q.Distinct)...)
 	return string(ss)
 }
 

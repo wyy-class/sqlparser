@@ -1,38 +1,15 @@
-// Package query provides functionality to interact with CSV files as a database.
-// It supports basic SQL-like operations such as SELECT, INSERT, UPDATE, and DELETE.
-//
-// The package defines the following types:
-// - DB: An interface that includes io.Writer and a Read method.
-// - Enginer: A struct that holds a reference to a DB.
-// - CSVDB: A struct that implements the DB interface for CSV files.
-// - CSVTable: A struct that represents a table with headers and rows.
-//
-// The package provides the following functions:
-// - NewCSVDB: Creates a new CSVDB instance with the given file path.
-// - (*CSVDB) Open: Opens the CSV file for reading and writing.
-// - (*CSVDB) Write: Writes data to the CSV file.
-// - (*CSVDB) Read: Reads data from the CSV file.
-// - CSVQuery: Converts a query to a CSV query and executes it.
-// - CSVSelect: Executes a SELECT query on the CSV file.
-// - CSVUpdate: Executes an UPDATE query on the CSV file (not implemented).
-// - CSVInsert: Executes an INSERT query on the CSV file (not implemented).
-// - CSVDelete: Executes a DELETE query on the CSV file (not implemented).
-//
-// The package also includes helper functions for filtering data and evaluating conditions:
-// - filterData: Filters rows based on the specified fields.
-// - filterRows: Filters rows based on the specified conditions.
-// - evalConditions: Evaluates conditions for a row.
 package yacc
 
 import (
 	"encoding/csv"
 	"fmt"
-	. "github.com/marianogappa/sqlparser/util"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	. "github.com/marianogappa/sqlparser/util"
 )
 
 // sql解析器
@@ -153,6 +130,14 @@ func CSVSelect(enginer *Enginer, query Query) (CSVTable, error) {
 		headers = query.Fields
 	}
 	log.Println("field filter:", resultRows)
+	// 处理别名
+	if len(query.Aliases) > 0 {
+		headers = replaceHeaders(headers, query.Aliases)
+	}
+	// 处理distinct
+	if query.Distinct {
+		resultRows = distinct(resultRows)
+	}
 	//返回结果
 	return CSVTable{Headers: headers, Rows: resultRows}, nil
 }
@@ -299,6 +284,28 @@ func matchPattern(pattern, str string) bool {
 	}
 	// 使用正则表达式匹配字符串
 	return re.MatchString(str)
+}
+
+func replaceHeaders(headers []string, aliases map[string]string) []string {
+	for i, header := range headers {
+		if alias, ok := aliases[header]; ok {
+			headers[i] = alias
+		}
+	}
+	return headers
+}
+
+func distinct(rows [][]string) [][]string {
+	var result [][]string
+	m := make(map[string]bool)
+	for _, row := range rows {
+		key := strings.Join(row, ",")
+		if _, ok := m[key]; !ok {
+			m[key] = true
+			result = append(result, row)
+		}
+	}
+	return result
 }
 
 func CSVUpdate(enginer *Enginer, query Query) (int, error) {
